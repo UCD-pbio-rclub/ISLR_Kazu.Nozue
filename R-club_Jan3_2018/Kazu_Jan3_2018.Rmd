@@ -1,0 +1,303 @@
+---
+title: "Kazu_R-club_MachineLearning_Jan3_2018"
+author: "Kazu"
+date: "1/3/2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(stringr)
+library(MASS)
+library(ISLR)
+version
+```
+# R codes for chapter 3
+```{r error=TRUE}
+# Chapter 3 Lab: Linear Regression
+# Simple Linear Regression
+#fix(Boston)
+names(Boston)
+lm.fit=lm(medv~lstat) # error
+lm.fit=lm(medv~lstat,data=Boston)
+attach(Boston)
+lm.fit=lm(medv~lstat)
+lm.fit
+summary(lm.fit)
+names(lm.fit)
+coef(lm.fit)
+confint(lm.fit)
+predict(lm.fit,data.frame(lstat=(c(5,10,15))), interval="confidence")
+predict(lm.fit,data.frame(lstat=(c(5,10,15))), interval="prediction")
+
+plot(lstat,medv)
+abline(lm.fit)
+abline(lm.fit,lwd=3)
+abline(lm.fit,lwd=3,col="red")
+plot(lstat,medv,col="red")
+plot(lstat,medv,pch=20)
+plot(lstat,medv,pch="+")
+plot(1:20,1:20,pch=1:20)
+par(mfrow=c(2,2))
+plot(lm.fit)
+plot(predict(lm.fit), residuals(lm.fit))
+plot(predict(lm.fit), rstudent(lm.fit)) # rstudent()
+plot(hatvalues(lm.fit))
+which.max(hatvalues(lm.fit))
+```
+###
+```{r error=TRUE}
+# 3.6.3 - 
+# Multiple Linear Regression
+lm.fit=lm(medv~lstat+age,data=Boston)
+summary(lm.fit)
+lm.fit=lm(medv~.,data=Boston) # short-hand of "all of variables"
+summary(lm.fit)
+library(car)
+vif(lm.fit) # VIF
+lm.fit1=lm(medv~.-age,data=Boston)
+summary(lm.fit1)
+lm.fit1=update(lm.fit, ~.-age)
+
+#3.6.4 Interaction Terms Interaction Terms
+summary(lm(medv~lstat*age,data=Boston))
+
+#3.6.5 Non-linear Transformations of the Predictors
+
+lm.fit2=lm(medv~lstat+I(lstat^2)) # I(); Inhibit Interpretation/Conversion of Objects
+summary(lm.fit2)
+lm.fit=lm(medv~lstat)
+anova(lm.fit,lm.fit2)
+par(mfrow=c(2,2))
+plot(lm.fit2)
+lm.fit5=lm(medv~poly(lstat,5))
+summary(lm.fit5)
+summary(lm(medv~log(rm),data=Boston))
+
+# 3.6.6  Qualitative Predictors
+#fix(Carseats)
+names(Carseats)
+lm.fit=lm(Sales~.+Income:Advertising+Price:Age,data=Carseats)
+summary(lm.fit)
+attach(Carseats)
+contrasts(ShelveLoc)
+detach()
+# 3.6.7  Writing Functions
+
+LoadLibraries
+LoadLibraries()
+LoadLibraries=function(){
+ library(ISLR)
+ library(MASS)
+ print("The libraries have been loaded.")
+ }
+LoadLibraries
+LoadLibraries()
+```
+# 3.7. Excersise 3
+## Suppose we have a data set with five predictors, X1 = GPA, X2 = IQ, X3 = Gender (1 for Female and 0 for Male), X4 = Interaction between GPA and IQ, and X5 = Interaction between GPA and Gender. The response is starting salary after graduation (in thousands of dollars). Suppose we use least squares to fit the model, and get βˆ0 = 50, βˆ1 = 2 0 , βˆ 2 = 0 . 0 7 , βˆ 3 = 3 5 , βˆ 4 = 0 . 0 1 , βˆ 5 = − 1 0 .
+## (a) Which answer is correct, and why?
+### i. ForafixedvalueofIQandGPA,malesearnmoreonaverage than females.
+### ii. For a fixed value of IQ and GPA, females earn more on average than males.
+### iii. ForafixedvalueofIQandGPA,malesearnmoreonaverage than females provided that the GPA is high enough.
+### iv. For a fixed value of IQ and GPA, females earn more on average than males provided that the GPA is high enough.
+## (b) Predict the salary of a female with IQ of 110 and a GPA of 4.0.
+## (c) True or false: Since the coefficient for the GPA/IQ interaction term is very small, there is very little evidence of an interaction effect. Justify your answer.
+```{r error=TRUE}
+# (a) 
+
+
+```
+# Dec 13
+
+# Dec 20
+# Problems
+# 3.9, d, e, f
+# This question involves the use of multiple linear regression on the Auto data set.
+```{r error=T}
+head(Auto)
+# (a) Produce a scatterplot matrix which includes all of the variables in the data set.
+pairs(Auto)
+# (b) Compute the matrix of correlations between the variables using the function cor(). You will need to exclude the name variable, which is qualitative.
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+{
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- abs(cor(x, y))
+    txt <- format(c(r, 0.123456789), digits = digits)[1]
+    txt <- paste0(prefix, txt)
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+pairs(Auto, lower.panel = panel.smooth, upper.panel = panel.cor)
+
+# (c) Use the lm() function to perform a multiple linear regression with mpg as the response and all other variables except name as the predictors. Use the summary() function to print the results. Comment on the output. For instance:
+## i. Is there a relationship between the predictors and the re- sponse?
+## ii. Which predictors appear to have a statistically significant relationship to the response?
+## iii. What does the coefficient for the year variable suggest?
+# (d) Use the plot() function to produce diagnostic plots of the linear regression fit. Comment on any problems you see with the fit. Do the residual plots suggest any unusually large outliers? Does the leverage plot identify any observations with unusually high leverage?
+lm.fit<-lm(mpg~.,data=Auto)
+summary(lm.fit)
+par(mfrow=c(2,2))
+plot(lm.fit) # diagnostic plots
+test<-plot(lm.fit) # how to get data for those plot?
+test<-plot(lm.fit,which=1)
+# interpretation of those plots (See http://data.library.virginia.edu/diagnostic-plots/)
+# Residuals vs Fitted: Outliers
+# Normal Q-Q # not normal
+# Scale-Location
+# Residuals vs Leverage: 
+
+
+# (e) Use the * and : symbols to fit linear regression models with interaction effects. Do any interactions appear to be statistically significant?
+lm.fit2<-lm(mpg~.,data=Auto) # how to find significant interactions?
+# using interaction.plot (not good idea)
+with(Auto,interaction.plot(cylinders,displacement,mpg))
+factors<-names(Auto)
+# for(n in 2:8) {
+#   # interaction plot #
+#   with(Auto,interaction.plot(factor[n],factor[n+1],mpg)) # does not work
+# }
+str(Auto)
+par(mfrow=c(6,5))
+with(Auto,interaction.plot(displacement,cylinders,mpg))
+with(Auto,interaction.plot(horsepower,cylinders,mpg))
+with(Auto,interaction.plot(weight,cylinders,mpg))
+with(Auto,interaction.plot(cylinders,acceleration,mpg))
+with(Auto,interaction.plot(cylinders,year,mpg))
+with(Auto,interaction.plot(cylinders,origin,mpg))
+with(Auto,interaction.plot(cylinders,name,mpg))
+#
+with(Auto,interaction.plot(displacement,horsepower,mpg))
+with(Auto,interaction.plot(displacement,weight,mpg))
+with(Auto,interaction.plot(displacement,acceleration,mpg))
+with(Auto,interaction.plot(displacement,year,mpg))
+with(Auto,interaction.plot(displacement,origin,mpg))
+with(Auto,interaction.plot(displacement,name,mpg))
+#
+with(Auto,interaction.plot(horsepower,weight,mpg))
+with(Auto,interaction.plot(horsepower,acceleration,mpg))
+with(Auto,interaction.plot(horsepower,year,mpg))
+with(Auto,interaction.plot(horsepower,origin,mpg))
+with(Auto,interaction.plot(horsepower,name,mpg))
+#
+with(Auto,interaction.plot(weight,acceleration,mpg))
+with(Auto,interaction.plot(weight,year,mpg))
+with(Auto,interaction.plot(weight,origin,mpg))
+with(Auto,interaction.plot(weight,name,mpg))
+#
+with(Auto,interaction.plot(acceleration,year,mpg))
+with(Auto,interaction.plot(acceleration,origin,mpg))
+with(Auto,interaction.plot(acceleration,name,mpg))
+#
+with(Auto,interaction.plot(year,origin,mpg)) # clear interaction
+with(Auto,interaction.plot(year,name,mpg))
+#
+with(Auto,interaction.plot(origin,name,mpg))
+# 
+lm.fit<-lm(mpg~.,data=Auto)
+summary(lm.fit)
+# weight, acceleration, year are significantly important factors
+# under name,audi 5000s (diesel),buick skylark limited, fiat strada custom, mazda glc are significant
+str(Auto)
+lm.fit3<-lm(mpg~weight*acceleration + year*acceleration+weight:year,data=Auto)
+summary(lm.fit3)
+
+# (f) Try a few different transformations of the variables, such as log(X), √X, X2. Comment on your findings.
+lm.fit3<-lm(mpg~weight*acceleration + year*acceleration+weight:year,data=Auto)
+plot(lm.fit3)
+plot(lm.fit)
+anova(lm.fit,lm.fit3)
+lm.fit4<-lm(mpg~. + weight:acceleration + year:acceleration+weight:year,data=Auto)
+anova(lm.fit4,lm.fit)
+lm.fit5<-lm(mpg~. -weight,data=Auto)
+anova(lm.fit5,lm.fit)
+# transform
+lm.fit3.log1<-lm(mpg~log(weight)*acceleration + year*acceleration+log(weight):year,data=Auto)
+summary(lm.fit3.log1)
+anova(lm.fit3.log1,lm.fit3)
+lm.fit3.log2<-lm(mpg~weight*acceleration + log(year)*acceleration+weight:log(year),data=Auto)
+anova(lm.fit3.log2,lm.fit3)
+lm.fit3.root1<-lm(mpg~sqrt(weight)*acceleration + year*acceleration+sqrt(weight):year,data=Auto)
+anova(lm.fit3.root1,lm.fit3)
+par(mfrow=c(2,2));plot(lm.fit3.root1)
+par(mfrow=c(2,2));plot(lm.fit3)
+```
+# 3.10 h
+# Is there evidence of outliers or high leverage observations in the model from (e)?
+```{r}
+head(Carseats)
+lm.Carseats1<-lm(Sales~Price+Urban + US,data=Carseats)
+lm.Carseats2<-lm(Sales~Price+Urban + US + Price:Urban + Price:US + Urban:US,data=Carseats)
+anova(lm.Carseats1,lm.Carseats2) # no difference
+str(Carseats)
+summary(lm.Carseats1)
+lm.Carseats.all<-lm(Sales~.,data=Carseats)
+summary(lm.Carseats.all)
+# Coefficients:
+#                   Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)      5.6606231  0.6034487   9.380  < 2e-16 ***
+# CompPrice        0.0928153  0.0041477  22.378  < 2e-16 ***
+# Income           0.0158028  0.0018451   8.565 2.58e-16 ***
+# Advertising      0.1230951  0.0111237  11.066  < 2e-16 ***
+# Population       0.0002079  0.0003705   0.561    0.575    
+# Price           -0.0953579  0.0026711 -35.700  < 2e-16 ***
+# ShelveLocGood    4.8501827  0.1531100  31.678  < 2e-16 ***
+# ShelveLocMedium  1.9567148  0.1261056  15.516  < 2e-16 ***
+# Age             -0.0460452  0.0031817 -14.472  < 2e-16 ***
+# Education       -0.0211018  0.0197205  -1.070    0.285    
+# UrbanYes         0.1228864  0.1129761   1.088    0.277    
+# USYes           -0.1840928  0.1498423  -1.229    0.220  
+lm.Carseats.e1<-lm(Sales~CompPrice+Income+Advertising+Price+ShelveLoc+Age,data=Carseats)
+anova(lm.Carseats.all,lm.Carseats.e1) # not significantly dirrerent
+plot(hatvalues(lm.Carseats.e1))
+n<-length(fitted(lm.Carseats.e1))
+#identify(1:n, hatvalues(lm.Carseats.e1), names(hatvalues(lm.Carseats.e1)))
+# finding outliners
+library(mvoutlier)
+outliers <- aq.plot(data.frame(x=predict(lm.Carseats.e1),y=Carseats$Sales))
+outliers
+# plot cook
+library(car)
+influencePlot(lm.Carseats.e1) #  the circles representing the observations proportional to Cook's distances
+# plot cook
+cutoff<-4/(nrow(Carseats)-length(lm.Carseats.e1$coefficients)-2) # see Robert (2011) pg 202, "R in Action"
+plot(lm.Carseats.e1, which=4, cook.levels=cutoff)
+abline(h=cutoff,lty=2,col="red")
+
+```
+
+# interaction plot (optional work)
+```{r}
+lm.fit<-lm(mpg~horsepower*acceleration,data=Auto)
+coeff<-as.data.frame(summary(lm.fit)$coeff)
+beta.horse=coeff$Estimate[2]
+beta.acc=coeff$Estimate[3]
+beta.horseXacc=coeff$Estimate[4]
+## how to visualize interaction?
+# make dataframe from model
+Auto$mpg.prediction<-coeff$Estimate[1] + (beta.acc+beta.horseXacc*Auto$horsepower)*Auto$acceleration+ beta.horse*Auto$horsepower
+library(cowplot)
+plot.predict<-qplot(x=acceleration,y=mpg.prediction,color=horsepower,data=Auto)+labs(title="prediction") + scale_y_continuous(limits=c(-5,50))
+plot.real<-qplot(x=acceleration,y=mpg,color=horsepower,data=Auto)+labs(title="real")+ scale_y_continuous(limits=c(-5,50))
+plot.all<-plot_grid(plot.real,plot.predict)
+save_plot("plot.all.png",plot.all,base_aspect_ratio = 3,base_height=5)
+```
+# Jan 3
+# problem 3.14
+```{r}
+# (a)
+set.seed(1)
+x1=runif(100)
+x2=0.5*x1+rnorm(100)/10
+y=2+2*x1+0.3*x2+rnorm(100)
+# y ~ 2 + 2x1 + 0.3x2 + e
+# (b) What is the correlation between x1 and x2? Create a scatterplot displaying the relationship between the variables.
+qplot(x1,x2)
+# (c) Using this data, fit a least squares regression to predict y using x1 and x2. Describe the results obtained. What are βˆ0, βˆ1, and βˆ2? How do these relate to the true β0, β1, and β2? Can you reject the null hypothesis H0 : β1 = 0? How about the null hypothesis H0 : β2 = 0?
+fit1=lm(y~x1+x2)
+summary(fit1)
+
+```

@@ -299,5 +299,8 @@ qplot(x1,x2)
 # (c) Using this data, fit a least squares regression to predict y using x1 and x2. Describe the results obtained. What are βˆ0, βˆ1, and βˆ2? How do these relate to the true β0, β1, and β2? Can you reject the null hypothesis H0 : β1 = 0? How about the null hypothesis H0 : β2 = 0?
 fit1=lm(y~x1+x2)
 summary(fit1)
+# beta0=2.1305, beta1=1.4396, beta2=1.0097
+# Reject H0:beta1=0 at p=0.05 (because p=0.0487)
+# Not reject H0: bveta2=0 (p=0.3)
 
 ```

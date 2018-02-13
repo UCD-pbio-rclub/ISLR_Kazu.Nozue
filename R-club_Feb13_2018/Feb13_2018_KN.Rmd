@@ -1,0 +1,66 @@
+---
+title: "Feb13_chapter5_KN"
+author: "Kazu"
+date: "2/3/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Chaper 5 Lab: Cross-Validation and the Bootstrap
+## 5.3.4 Bootstrap
+```{r}
+library(ISLR)
+library(boot)
+# The Bootstrap
+alpha.fn=function(data,index){
+ X=data$X[index]
+ Y=data$Y[index]
+ return((var(Y)-cov(X,Y))/(var(X)+var(Y)-2*cov(X,Y)))
+ }
+alpha.fn(Portfolio,1:100)
+set.seed(1)
+alpha.fn(Portfolio,sample(100,100,replace=T))
+boot.out<-boot(Portfolio,alpha.fn,R=1000)
+plot(boot.out) # histogram and QQplot
+
+# Estimating the Accuracy of a Linear Regression Model
+boot.fn=function(data,index)
+ return(coef(lm(mpg~horsepower,data=data,subset=index)))
+boot.fn(Auto,1:392)
+set.seed(1)
+boot.fn(Auto,sample(392,392,replace=T))
+boot.fn(Auto,sample(392,392,replace=T))
+boot(Auto,boot.fn,1000)
+summary(lm(mpg~horsepower,data=Auto))$coef
+boot.fn=function(data,index)
+ coefficients(lm(mpg~horsepower+I(horsepower^2),data=data,subset=index))
+set.seed(1)
+boot(Auto,boot.fn,1000)
+summary(lm(mpg~horsepower+I(horsepower^2),data=Auto))$coef
+```
+# 5.4 Exercises
+#4
+```{r}
+# Suppose that we use some statistical learning method to make a pre- diction for the response Y for a particular value of the predictor X. Carefully describe how we might estimate the standard deviation of our prediction.
+ 
+```
+#6 We continue to consider the use of a logistic regression model to predict the probability of default using income and balance on the Default data set. In particular, we will now compute estimates for the standard errors of the income and balance logistic regression co- efficients in two different ways: (1) using the bootstrap, and (2) using the standard formula for computing the standard errors in the glm() function. Do not forget to set a random seed before beginning your analysis
+```{r}
+# (a) Using the summary() and glm() functions, determine the estimated standard errors for the coefficients associated with income and balance in a multiple logistic regression model that uses both predictors.
+summary(Default)
+Default.glm<-glm(default~income*balance,data=Default,family=binomial)
+summary(Default.glm)
+
+# (b) Write a function, boot.fn(), that takes as input the Default data set as well as an index of the observations, and that outputs the coefficient estimates for income and balance in the multiple logistic regression model.
+set.seed(1)
+
+
+# (c) Use the boot() function together with your boot.fn() function to estimate the standard errors of the logistic regression coefficients for income and balance.
+# (d) Comment on the estimated standard errors obtained using the glm() function and using your bootstrap function.
+```
+#9
+```{r}
+
+```

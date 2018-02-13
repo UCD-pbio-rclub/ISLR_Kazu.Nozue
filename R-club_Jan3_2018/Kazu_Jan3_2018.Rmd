@@ -286,6 +286,9 @@ plot.all<-plot_grid(plot.real,plot.predict)
 save_plot("plot.all.png",plot.all,base_aspect_ratio = 3,base_height=5)
 ```
 # Jan 3
+# problem 3.2
+## KNN regression: average
+## KNN classifier:
 # problem 3.14
 ```{r}
 # (a)
@@ -296,11 +299,28 @@ y=2+2*x1+0.3*x2+rnorm(100)
 # y ~ 2 + 2x1 + 0.3x2 + e
 # (b) What is the correlation between x1 and x2? Create a scatterplot displaying the relationship between the variables.
 qplot(x1,x2)
+cor(x1,x2)
 # (c) Using this data, fit a least squares regression to predict y using x1 and x2. Describe the results obtained. What are βˆ0, βˆ1, and βˆ2? How do these relate to the true β0, β1, and β2? Can you reject the null hypothesis H0 : β1 = 0? How about the null hypothesis H0 : β2 = 0?
 fit1=lm(y~x1+x2)
-summary(fit1)
+summary(fit1)$coeff
 # beta0=2.1305, beta1=1.4396, beta2=1.0097
 # Reject H0:beta1=0 at p=0.05 (because p=0.0487)
 # Not reject H0: bveta2=0 (p=0.3)
+# (d) Now fit a least squares regression to predict y using only x1. Comment on your results. Can you reject the null hypothesis H0 :β1 =0?
+fit.d=lm(y~x1)
+summary(fit.d)$coeff
+# Reject 2.660579e-06.
+# (e) Now fit a least squares regression to predict y using only x2. Comment on your results. Can you reject the null hypothesis H0 :β1 =0?
+fit.e=lm(y~x2)
+summary(fit.e)$coeff
+# Reject 1.366430e-05
+# (f) Do the results obtained in (c)–(e) contradict each other? Explain your answer.
+library(car)
+?vif
+vif()
+# (g)
+x1=c(x1, 0.1)
+x2=c(x2, 0.8)
+y=c(y,6)
 
 ```

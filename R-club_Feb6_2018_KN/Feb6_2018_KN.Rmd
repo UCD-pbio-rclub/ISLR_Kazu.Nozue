@@ -1,0 +1,117 @@
+---
+title: "Feb6_chapter5_KN"
+author: "Kazu"
+date: "2/6/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Chaper 5 Lab: Cross-Validation and the Bootstrap
+## 5.3.1 The Validation Set Approach
+```{r}
+library(ISLR)
+set.seed(1)
+train=sample(392,196)
+lm.fit=lm(mpg~horsepower,data=Auto,subset=train)
+attach(Auto)
+mean((mpg-predict(lm.fit,Auto))[-train]^2)
+lm.fit2=lm(mpg~poly(horsepower,2),data=Auto,subset=train)
+mean((mpg-predict(lm.fit2,Auto))[-train]^2)
+lm.fit3=lm(mpg~poly(horsepower,3),data=Auto,subset=train)
+mean((mpg-predict(lm.fit3,Auto))[-train]^2)
+set.seed(2)
+train=sample(392,196)
+lm.fit=lm(mpg~horsepower,subset=train)
+mean((mpg-predict(lm.fit,Auto))[-train]^2)
+lm.fit2=lm(mpg~poly(horsepower,2),data=Auto,subset=train)
+mean((mpg-predict(lm.fit2,Auto))[-train]^2)
+lm.fit3=lm(mpg~poly(horsepower,3),data=Auto,subset=train)
+mean((mpg-predict(lm.fit3,Auto))[-train]^2)
+```
+#5.3.2 Leave-One-Out Cross-Validation (LOOCV)
+```{r}
+glm.fit=glm(mpg~horsepower,data=Auto)
+coef(glm.fit)
+lm.fit=lm(mpg~horsepower,data=Auto)
+coef(lm.fit)
+# In this lab, we will perform linear regression using the glm() function rather than the lm() function because the former can be used together with cv.glm(). The cv.glm() function is part of the boot library.
+library(boot)
+glm.fit=glm(mpg~horsepower,data=Auto)
+cv.err=cv.glm(Auto,glm.fit)
+cv.err$delta
+# The cv.glm() function produces a list with several components. The two numbers in the delta vector contain the cross-validation results. In this case the numbers are identical (up to two decimal places) and correspond to the LOOCV statistic given in (5.1). Below, we discuss a situation in which the two numbers differ. Our cross-validation estimate for the test error is approximately 24.23.
+cv.glm()
+cv.error=rep(0,5)
+# We can repeat this procedure for increasingly complex polynomial fits. To automate the process, we use the for() function to initiate a for loop for() which iteratively fits polynomial regressions for polynomials of order i = 1 to i = 5, computes the associated cross-validation error, and stores it in the ith element of the vector cv.error. We begin by initializing the vector. This command will likely take a couple of minutes to run.
+for (i in 1:5){
+ glm.fit=glm(mpg~poly(horsepower,i),data=Auto)
+ cv.error[i]=cv.glm(Auto,glm.fit)$delta[1]
+ }
+cv.error
+```
+##5.3.3 k-Fold Cross-Validation
+```{r}
+# The cv.glm() function can also be used to implement k-fold CV. Below we use k = 10, a common choice for k, on the Auto data set. We once again set a random seed and initialize a vector in which we will store the CV errors corresponding to the polynomial fits of orders one to ten.
+set.seed(17)
+cv.error.10=rep(0,10)
+for (i in 1:10){
+ glm.fit=glm(mpg~poly(horsepower,i),data=Auto)
+ cv.error.10[i]=cv.glm(Auto,glm.fit,K=10)$delta[1]
+ }
+cv.error.10
+```
+# Problems
+```{r}
+# 3. We now review k-fold cross-validation.
+## (a) Explain how k-fold cross-validation is implemented.
+## (b) What are the advantages and disadvantages of k-fold cross-validation relative to: 
+### i. The validation set approach? 
+### (KN) 
+### ii. LOOCV? 
+### (KN) Fast computational time.
+
+# 5. In Chapter 4, we used logistic regression to predict the probability of default using income and balance on the Default data set. We will now estimate the test error of this logistic regression model using the validation set approach. Do not forget to set a random seed before beginning your analysis.
+## (a) Fit a logistic regression model that uses income and balance to predict default.
+set.seed(1)
+
+## (b) Using the validation set approach, estimate the test error of this model. In order to do this, you must perform the following steps: 
+### i. Split the sample set into a training set and a validation set.
+### ii. Fit a multiple logistic regression model using only the train- ing observations.
+### iii. Obtain a prediction of default status for each individual in the validation set by computing the posterior probability of default for that individual, and classifying the individual to the default category if the posterior probability is greater than 0.5.
+### iv. Compute the validation set error, which is the fraction of the observations in the validation set that are misclassified.
+
+## (c) Repeat the process in (b) three times, using three different splits of the observations into a training set and a validation set. Com- ment on the results obtained.
+## (d) Now consider a logistic regression model that predicts the prob- ability of default using income, balance, and a dummy variable for student. Estimate the test error for this model using the val- idation set approach. Comment on whether or not including a dummy variable for student leads to a reduction in the test error rate.
+
+# 7. In Sections 5.3.2 and 5.3.3, we saw that the cv.glm() function can be used in order to compute the LOOCV test error estimate. Alterna- tively, one could compute those quantities using just the glm() and predict.glm() functions, and a for loop. You will now take this ap- proach in order to compute the LOOCV error for a simple logistic regression model on the Weekly data set. Recall that in the context of classification problems, the LOOCV error is given in (5.4).
+## (a) Fit a logistic regression model that predicts Direction using Lag1 and Lag2.
+## (b) Fit a logistic regression model that predicts Direction using Lag1 and Lag2 using all but the first observation.
+## (c) Use the model from (b) to predict the direction of the first obser- vation. You can do this by predicting that the first observation will go up if P(Direction="Up"|Lag1, Lag2) > 0.5. Was this ob- servation correctly classified?
+## (d) Writeaforloopfromi=1toi=n,wherenisthenumberof observations in the data set, that performs each of the following steps:
+### i. Fit a logistic regression model using all but the ith obser- vation to predict Direction using Lag1 and Lag2.
+### ii. Compute the posterior probability of the market moving up for the ith observation.
+### iii. Use the posterior probability for the ith observation in order to predict whether or not the market moves up.
+### iv. Determine whether or not an error was made in predicting the direction for the ith observation. If an error was made, then indicate this as a 1, and otherwise indicate it as a 0.
+## (e) Take the average of the n numbers obtained in (d)iv in order to obtain the LOOCV estimate for the test error. Comment on the results.
+
+# 8. We will now perform cross-validation on a simulated data set.
+## (a) Generate a simulated data set as follows:
+## > set.seed(1)
+## > x=rnorm(100)
+## > y=x-2*x^2+rnorm(100)
+## In this data set, what is n and what is p? Write out the model used to generate the data in equation form.
+## (b) Create a scatterplot of X against Y . Comment on what you find.
+## (c) Set a random seed, and then compute the LOOCV errors that result from fitting the following four models using least squares:
+### i. Y = β0 + β1X + ε
+### ii. Y = β0 + β1X + β2X2 + ε
+### iii. Y = β0 +β1X +β2X2 +β3X3 +ε
+### iv. Y = β0 +β1X +β2X2 +β3X3 +β4X4 +ε.
+### Note you may find it helpful to use the data.frame() function to create a single data set containing both X and Y .
+## (d) Repeat (c) using another random seed, and report your results.
+## Are your results the same as what you got in (c)? Why?
+## (e) Which of the models in (c) had the smallest LOOCV error? Is this what you expected? Explain your answer.
+## (f) Comment on the statistical significance of the coefficient esti- mates that results from fitting each of the models in (c) using least squares. Do these results agree with the conclusions drawn based on the cross-validation results?
+
+```

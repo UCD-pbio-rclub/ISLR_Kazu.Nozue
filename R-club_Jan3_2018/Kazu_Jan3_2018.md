@@ -2743,6 +2743,9 @@ plot.all<-plot_grid(plot.real,plot.predict)
 save_plot("plot.all.png",plot.all,base_aspect_ratio = 3,base_height=5)
 ```
 # Jan 3
+# problem 3.2
+## KNN regression: average
+## KNN classifier:
 # problem 3.14
 
 ```r
@@ -2757,6 +2760,14 @@ qplot(x1,x2)
 ```
 
 ![](Kazu_Jan3_2018_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
+```r
+cor(x1,x2)
+```
+
+```
+## [1] 0.8351212
+```
 
 ```r
 # (c) Using this data, fit a least squares regression to predict y using x1 and x2. Describe the results obtained. What are βˆ0, βˆ1, and βˆ2? How do these relate to the true β0, β1, and β2? Can you reject the null hypothesis H0 : β1 = 0? How about the null hypothesis H0 : β2 = 0?
@@ -2784,4 +2795,10 @@ summary(fit1)
 ## Residual standard error: 1.056 on 97 degrees of freedom
 ## Multiple R-squared:  0.2088,	Adjusted R-squared:  0.1925 
 ## F-statistic:  12.8 on 2 and 97 DF,  p-value: 1.164e-05
+```
+
+```r
+# beta0=2.1305, beta1=1.4396, beta2=1.0097
+# Reject H0:beta1=0 at p=0.05 (because p=0.0487)
+# Not reject H0: bveta2=0 (p=0.3)
 ```

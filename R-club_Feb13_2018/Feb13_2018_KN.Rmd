@@ -2,7 +2,9 @@
 title: "Feb13_chapter5_KN"
 author: "Kazu"
 date: "2/3/2018"
-output: html_document
+output: 
+  html_document: 
+    keep_md: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -51,16 +53,60 @@ summary(lm(mpg~horsepower+I(horsepower^2),data=Auto))$coef
 # (a) Using the summary() and glm() functions, determine the estimated standard errors for the coefficients associated with income and balance in a multiple logistic regression model that uses both predictors.
 summary(Default)
 Default.glm<-glm(default~income*balance,data=Default,family=binomial)
-summary(Default.glm)
+summary(Default.glm)$coeff
 
 # (b) Write a function, boot.fn(), that takes as input the Default data set as well as an index of the observations, and that outputs the coefficient estimates for income and balance in the multiple logistic regression model.
-set.seed(1)
-
+boot.fn=function(data,index) {
+  Default.glm.boot<-glm(default~income*balance,data=data,subset=index,family=binomial)
+  return(summary(Default.glm.boot)$coeff)
+}
 
 # (c) Use the boot() function together with your boot.fn() function to estimate the standard errors of the logistic regression coefficients for income and balance.
-# (d) Comment on the estimated standard errors obtained using the glm() function and using your bootstrap function.
-```
-#9
-```{r}
+set.seed(1)
+boot(data=Default,boot.fn,R=1000)
 
+# (d) Comment on the estimated standard errors obtained using the glm() function and using your bootstrap function.
+
+```
+#9 We will now consider the Boston housing data set, from the MASS library.
+```{r}
+library(MASS);summary(Boston)
+# cf. boot package https://www.statmethods.net/advstats/bootstrapping.html
+#  http://people.tamu.edu/~alawing/materials/ESSM689/Btutorial.pdf
+# (a) Based on this data set, provide an estimate for the population mean of medv. Call this estimate μˆ.
+μ.hat<-mean(Boston$medv)
+# (b) Provide an estimate of the standard error of μˆ. Interpret this result.
+# Hint: We can compute the standard error of the sample mean by dividing the sample standard deviation by the square root of the number of observations.
+sem<-sd(Boston$medv)/sqrt(length(Boston$medv)) # 0.4088611
+# (c) Now estimate the standard error of μˆ using the bootstrap. How does this compare to your answer from (b)?
+boot.mean<-function(data,index) {mean(data[index])}
+boot.mean.results<-boot(data=Boston$medv,boot.mean,R=1000)
+boot.mean.results
+plot(boot.mean.results)
+# (d) Based on your bootstrap estimate from (c), provide a 95 % con- fidence interval for the mean of medv. Compare it to the results obtained using t.test(Boston$medv).
+# Hint: You can approximate a 95 % confidence interval using the formula [μˆ − 2SE(μˆ), μˆ + 2SE(μˆ)].
+attributes(boot.mean.results)
+boot.mean.results$t0
+boot.mean.results$t
+boot.mean.results$R
+boot.mean.results$call
+boot.mean.results$stype
+boot.mean.results$sim
+boot.mean.results$strata
+boot.mean.results$statistic
+# how to get SE from bootstrap results?
+boot.ci(boot.mean.results)
+
+# (e) Based on this data set, provide an estimate, μˆmed, for the median value of medv in the population.
+mu.hat.med<-median(Boston$medv) # 21.2
+
+# (f) We now would like to estimate the standard error of μˆmed. Unfortunately, there is no simple formula for computing the standard error of the median. Instead, estimate the standard error of the median using the bootstrap. Comment on your findings.
+boot.median<-function(data,d) {median(data[d])}
+boot.median.results<-boot(data=Boston$medv,boot.median,R=1000)
+boot.median.results # similar to SEM.
+
+# (g) Based on this data set, provide an estimate for the tenth percentile of medv in Boston suburbs. Call this quantity μˆ0.1. (You can use the quantile() function.)
+?quantile
+
+# (h) Use the bootstrap to estimate the standard error of μˆ0.1. Com- ment on your findings.
 ```

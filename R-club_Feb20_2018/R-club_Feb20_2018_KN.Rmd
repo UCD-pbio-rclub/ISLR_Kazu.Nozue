@@ -1,0 +1,119 @@
+---
+title: "Feb_20_2018_KN"
+author: "Kazu"
+date: "2/20/2018"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ISLR)
+library(boot)
+```
+
+```{r}
+# Chapter 6 Lab 1: Subset Selection Methods
+
+# Best Subset Selection
+fix(Hitters)
+names(Hitters)
+dim(Hitters)
+sum(is.na(Hitters$Salary))
+Hitters=na.omit(Hitters)
+dim(Hitters)
+sum(is.na(Hitters))
+library(leaps)
+regfit.full=regsubsets(Salary~.,Hitters)
+summary(regfit.full)
+regfit.full=regsubsets(Salary~.,data=Hitters,nvmax=19)
+reg.summary=summary(regfit.full)
+names(reg.summary)
+reg.summary$rsq
+par(mfrow=c(2,2))
+plot(reg.summary$rss,xlab="Number of Variables",ylab="RSS",type="l")
+plot(reg.summary$adjr2,xlab="Number of Variables",ylab="Adjusted RSq",type="l")
+which.max(reg.summary$adjr2)
+points(11,reg.summary$adjr2[11], col="red",cex=2,pch=20)
+plot(reg.summary$cp,xlab="Number of Variables",ylab="Cp",type='l')
+which.min(reg.summary$cp)
+points(10,reg.summary$cp[10],col="red",cex=2,pch=20)
+which.min(reg.summary$bic)
+plot(reg.summary$bic,xlab="Number of Variables",ylab="BIC",type='l')
+points(6,reg.summary$bic[6],col="red",cex=2,pch=20)
+plot(regfit.full,scale="r2")
+plot(regfit.full,scale="adjr2")
+plot(regfit.full,scale="Cp")
+plot(regfit.full,scale="bic")
+coef(regfit.full,6)
+```
+# Forward and Backward Stepwise Selection
+```{r}
+regfit.fwd=regsubsets(Salary~.,data=Hitters,nvmax=19,method="forward")
+summary(regfit.fwd)
+regfit.bwd=regsubsets(Salary~.,data=Hitters,nvmax=19,method="backward")
+summary(regfit.bwd)
+coef(regfit.full,7)
+coef(regfit.fwd,7)
+coef(regfit.bwd,7)
+
+
+```
+# practice
+```{r}
+# 6.8 Exercises
+#Conceptual
+#1. We perform best subset, forward stepwise, and backward stepwise selection on a single data set. For each approach, we obtain p + 1 models, containing 0, 1, 2, . . . , p predictors. Explain your answers:
+## (a) Which of the three models with k predictors has the smallest training RSS?
+## (KN) forward and backward
+## (b) Which of the three models with k predictors has the smallest test RSS?
+
+## (c) True or False:
+### i. The predictors in the k-variable model identified by forward stepwise are a subset of the predictors in the (k+1)-variable model identified by forward stepwise selection.
+### ii. The predictors in the k-variable model identified by back- ward stepwise are a subset of the predictors in the (k + 1)- variable model identified by backward stepwise selection.
+### iii. The predictors in the k-variable model identified by back- ward stepwise are a subset of the predictors in the (k + 1)- variable model identified by forward stepwise selection.
+### iv. The predictors in the k-variable model identified by forward stepwise are a subset of the predictors in the (k+1)-variable model identified by backward stepwise selection.
+### v. The predictors in the k-variable model identified by best subset are a subset of the predictors in the (k + 1)-variable model identified by best subset selection.
+```
+
+```{r}
+# 8. In this exercise, we will generate simulated data, and will then use this data to perform best subset selection.
+## (a) Use the rnorm() function to generate a predictor X of length n = 100, as well as a noise vector ε of length n = 100.
+set.seed(1)
+X<-rnorm(n=100)
+epsion<-rnorm(n=100)
+## (b) Generate a response vector Y of length n = 100 according to the model
+# Y = β0 +β1X +β2X2 +β3X3 +ε, where β0, β1, β2, and β3 are constants of your choice.
+beta<-1
+beta1<-2
+beta2<-3
+beta3<-4
+
+Y<-beta + beta1*X + beta2*X^2 + beta3*X^3 + epsion
+
+## (c) Use the regsubsets() function to perform best subset selection in order to choose the best model containing the predictors X, X2, . . . , X10. What is the best model obtained according to Cp, BIC, and adjusted R2? Show some plots to provide evidence for your answer, and report the coefficients of the best model ob- tained. Note you will need to use the data.frame() function to create a single data set containing both X and Y . 2b setting.
+library(leaps)
+data<-data.frame(X=X, Y=Y)
+regfit.full<-regsubsets(Y~X+I(X^2)+I(X^3)+I(X^4)+I(X^5)+I(X^6)+I(X^7)+I(X^8)+I(X^9)+I(X^10), data=data,nvmax=10)
+reg.full.summary <- summary(regfit.full)
+par(mfrow = c(2, 2))
+plot(reg.full.summary$cp, xlab = "Number of variables", ylab = "C_p", type = "l")
+points(which.min(reg.full.summary$cp), reg.full.summary$cp[which.min(reg.full.summary$cp)], col = "red", cex = 2, pch = 20)
+plot(reg.full.summary$bic, xlab = "Number of variables", ylab = "BIC", type = "l")
+points(which.min(reg.full.summary$bic), reg.full.summary$bic[which.min(reg.full.summary$bic)], col = "red", cex = 2, pch = 20)
+plot(reg.full.summary$adjr2, xlab = "Number of variables", ylab = "Adjusted R^2", type = "l")
+points(which.max(reg.full.summary$adjr2), reg.full.summary$adjr2[which.max(reg.full.summary$adjr2)], col = "red", cex = 2, pch = 20)
+
+## (d) Repeat (c), using forward stepwise selection and also using back- wards stepwise selection. How does your answer compare to the results in (c)?
+regfit.fwd<-regsubsets(Y~X+I(X^2)+I(X^3)+I(X^4)+I(X^5)+I(X^6)+I(X^7)+I(X^8)+I(X^9)+I(X^10), data=data,nvmax=10,method="forward")
+regfit.bwd<-regsubsets(Y~X+I(X^2)+I(X^3)+I(X^4)+I(X^5)+I(X^6)+I(X^7)+I(X^8)+I(X^9)+I(X^10), data=data,nvmax=10,method="backward")
+coef(regfit.full,7)
+coef(regfit.fwd,7)
+coef(regfit.bwd,7)
+
+## (e) Now fit a lasso model to the simulated data, again using X,X2, . . . , X 10 as predictors. Use cross-validation to select the optimal value of λ. Create plots of the cross-validation error as a function of λ. Report the resulting coefficient estimates, and discuss the results obtained.
+
+## (f) Now generate a response vector Y according to the model Y = β0 + β7X7 + ε,and perform best subset selection and the lasso. Discuss the results obtained
+
+```

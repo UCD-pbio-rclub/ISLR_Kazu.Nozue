@@ -1,6 +1,11 @@
-# Feb_20_2018_KN
-Kazu  
-2/20/2018  
+---
+title: "Feb_20_2018_KN"
+author: "Kazu"
+date: "2/20/2018"
+output: 
+  html_document: 
+    keep_md: yes
+---
 
 
 
@@ -126,8 +131,13 @@ reg.summary$rsq
 ```
 
 ```r
-par(mfrow=c(2,2))
+# par(mfrow=c(2,2)) # to aviod error 
 plot(reg.summary$rss,xlab="Number of Variables",ylab="RSS",type="l")
+```
+
+![](R-club_Feb20_2018_KN_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
+
+```r
 plot(reg.summary$adjr2,xlab="Number of Variables",ylab="Adjusted RSq",type="l")
 which.max(reg.summary$adjr2)
 ```
@@ -138,6 +148,11 @@ which.max(reg.summary$adjr2)
 
 ```r
 points(11,reg.summary$adjr2[11], col="red",cex=2,pch=20)
+```
+
+![](R-club_Feb20_2018_KN_files/figure-html/unnamed-chunk-1-2.png)<!-- -->
+
+```r
 plot(reg.summary$cp,xlab="Number of Variables",ylab="Cp",type='l')
 which.min(reg.summary$cp)
 ```
@@ -148,6 +163,11 @@ which.min(reg.summary$cp)
 
 ```r
 points(10,reg.summary$cp[10],col="red",cex=2,pch=20)
+```
+
+![](R-club_Feb20_2018_KN_files/figure-html/unnamed-chunk-1-3.png)<!-- -->
+
+```r
 which.min(reg.summary$bic)
 ```
 
@@ -160,16 +180,31 @@ plot(reg.summary$bic,xlab="Number of Variables",ylab="BIC",type='l')
 points(6,reg.summary$bic[6],col="red",cex=2,pch=20)
 ```
 
-![](R-club_Feb20_2018_KN_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
+![](R-club_Feb20_2018_KN_files/figure-html/unnamed-chunk-1-4.png)<!-- -->
 
 ```r
 plot(regfit.full,scale="r2")
+```
+
+![](R-club_Feb20_2018_KN_files/figure-html/unnamed-chunk-1-5.png)<!-- -->
+
+```r
 plot(regfit.full,scale="adjr2")
+```
+
+![](R-club_Feb20_2018_KN_files/figure-html/unnamed-chunk-1-6.png)<!-- -->
+
+```r
 plot(regfit.full,scale="Cp")
+```
+
+![](R-club_Feb20_2018_KN_files/figure-html/unnamed-chunk-1-7.png)<!-- -->
+
+```r
 plot(regfit.full,scale="bic")
 ```
 
-![](R-club_Feb20_2018_KN_files/figure-html/unnamed-chunk-1-2.png)<!-- -->
+![](R-club_Feb20_2018_KN_files/figure-html/unnamed-chunk-1-8.png)<!-- -->
 
 ```r
 coef(regfit.full,6)
@@ -368,20 +403,19 @@ coef(regfit.bwd,7)
 #Conceptual
 #1. We perform best subset, forward stepwise, and backward stepwise selection on a single data set. For each approach, we obtain p + 1 models, containing 0, 1, 2, . . . , p predictors. Explain your answers:
 ## (a) Which of the three models with k predictors has the smallest training RSS?
-<<<<<<< HEAD
 ## (KN) forward and backward?. 1 + p(p+1)/2 vs 2^p (best subset). Wrong logic.
 ## (KN2) With k predictors. Best subset selection gave us choose(p,k) models. Forward stepwise gave us p-k models. which is smaller? 
-
-=======
 ## (KN) forward and backward
->>>>>>> c295324f7058271d0364ab91df398cd202e2973f
 ## (b) Which of the three models with k predictors has the smallest test RSS?
 
 ## (c) True or False:
 ### i. The predictors in the k-variable model identified by forward stepwise are a subset of the predictors in the (k+1)-variable model identified by forward stepwise selection.
+##
 ### ii. The predictors in the k-variable model identified by back- ward stepwise are a subset of the predictors in the (k + 1)- variable model identified by backward stepwise selection.
-### iii. The predictors in the k-variable model identified by back- ward stepwise are a subset of the predictors in the (k + 1)- variable model identified by forward stepwise selection.
+### iii. The predictors in the k-variable model identified by back-ward stepwise are a subset of the predictors in the (k + 1)- variable model identified by forward stepwise selection.
+
 ### iv. The predictors in the k-variable model identified by forward stepwise are a subset of the predictors in the (k+1)-variable model identified by backward stepwise selection.
+
 ### v. The predictors in the k-variable model identified by best subset are a subset of the predictors in the (k + 1)-variable model identified by best subset selection.
 ```
 

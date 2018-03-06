@@ -163,5 +163,4 @@ mean((ridge.pred-y.test)^2)
 lm(y~x, subset=train)
 predict(ridge.mod,s=0,exact=T,type="coefficients")[1:20,] # error
 
-
 ```

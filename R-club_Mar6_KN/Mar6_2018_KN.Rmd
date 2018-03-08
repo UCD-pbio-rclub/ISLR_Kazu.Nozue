@@ -97,75 +97,191 @@ lasso.coef[lasso.coef!=0]
 ## (KN) see my notebook. Just replace lamda part
 ## (d) Argue that in this setting, the lasso coefficients βˆ1 and βˆ2 are not unique—in other words, there are many possible solutions to the optimization problem in (c). Describe these solutions.
 ## (KN) ?
+```
 
 # 8 (you already did this for best subset; update for lasso)
+```{r}
 # (a) Use the rnorm() function to generate a predictor X of length n = 100, as well as a noise vector ε of length n = 100.
 rm(x,y)
-x<-rnorm(n=100);eps<-rnorm(n=100)
+set.seed(1);x<-rnorm(n=100);eps<-rnorm(n=100)
 # (b) Generate a response vector Y of length n = 100 according to the model
-b0<-2;b1<-3;b2<- -1;b3<- 0.5
-y<-b0 + b1 * x + b2 * x^2 +3 + eps
+#b0<-2;b1<-3;b2<- -1;b3<- 0.5 # set1
+b0<-5;b1<-6;b2<- 7;b3<- 8 # Geoff's set
+y<-b0 + b1 * x + b2 * x^2 +b3*x^3 + eps
+# (c) Use the regsubsets() function to perform best subset selection in order to choose the best model containing the predictors X, X2, . . . , X10. What is the best model obtained according to Cp, BIC, and adjusted R2? Show some plots to provide evidence for your answer, and report the coefficients of the best model ob- tained. Note you will need to use the data.frame() function to create a single data set containing both X and Y .
+library(leaps)
+data<-data.frame(X=x, Y=y)
+system.time(regfit.full<-regsubsets(Y~X+I(X^2)+I(X^3)+I(X^4)+I(X^5)+I(X^6)+I(X^7)+I(X^8)+I(X^9)+I(X^10), data=data,nvmax=10))
+
+reg.full.summary <- summary(regfit.full)
+#par(mfrow = c(2, 2)) # preventing errorsin plot
+# Cp
+plot(reg.full.summary$cp, xlab = "Number of variables", ylab = "C_p", type = "l")
+points(which.min(reg.full.summary$cp), reg.full.summary$cp[which.min(reg.full.summary$cp)], col = "red", cex = 2, pch = 20)
+# bic
+plot(regfit.full,scale="bic")
+plot(reg.full.summary$bic, xlab = "Number of variables", ylab = "BIC", type = "l")
+points(which.min(reg.full.summary$bic), reg.full.summary$bic[which.min(reg.full.summary$bic)], col = "red", cex = 2, pch = 20)
+# Adjusted R^2
+plot(reg.full.summary$adjr2, xlab = "Number of variables", ylab = "Adjusted R^2", type = "l")
+points(which.max(reg.full.summary$adjr2), reg.full.summary$adjr2[which.max(reg.full.summary$adjr2)], col = "red", cex = 2, pch = 20)
+
+## (d) Repeat (c), using forward stepwise selection and also using back- wards stepwise selection. How does your answer compare to the results in (c)?
+regfit.fwd<-regsubsets(Y~X+I(X^2)+I(X^3)+I(X^4)+I(X^5)+I(X^6)+I(X^7)+I(X^8)+I(X^9)+I(X^10), data=data,nvmax=10,method="forward")
+# alternative description (learned from Geoff'sscript)
+regfit.fwd2 <- regsubsets(y ~ poly(x, 10, raw=T), data = data, nvmax = 10, method = "forward")
+
+regfit.bwd<-regsubsets(Y~X+I(X^2)+I(X^3)+I(X^4)+I(X^5)+I(X^6)+I(X^7)+I(X^8)+I(X^9)+I(X^10), data=data,nvmax=10,method="backward")
+coef(regfit.full,7)
+coef(regfit.fwd,7)
+coef(regfit.bwd,7)
+
 # (e) Now fit a lasso model to the simulated data, again using X,X2, . . . , X 10 as predictors. Use cross-validation to select the optimal value of λ. Create plots of the cross-validation error as a function of λ. Report the resulting coefficient estimates, and discuss the results obtained.
 library(glmnet)
 # lasso.mod=glmnet(x[train,],y[train],alpha=1,lambda=grid) # text way
-# 
 data.full <- data.frame(y = y, x = x)
 xmat <- model.matrix(y ~ x + I(x^2) + I(x^3) + I(x^4) + I(x^5) + I(x^6) + I(x^7) + I(x^8) + I(x^9) + I(x^10), data = data.full)[, -1] # 
-cv.lasso <- cv.glmnet(xmat, y, alpha = 1)
-plot(cv.lasso)
+# how about 
+# xmat2<-model.matrix(y~.,data=data.full) # this is not correct. Geoff's data set itself has x^2, X^3, ...x^10.
+system.time(cv.lasso <- cv.glmnet(xmat, y, alpha = 1));plot(cv.lasso)
+#cv.lasso2 <- cv.glmnet(xmat2, y, alpha = 1);plot(cv.lasso2)
 bestlam<-cv.lasso$lambda.min # the best lamda
+
 lasso<-glmnet(xmat,y,alpha=1) # there seems two ways to use glmnet?
 # one described in text and another using model.matrix?
-## 
+# textbook described "grid" method, but glmnet automatically spits out bestlam
 predict(lasso, s = bestlam, type = "coefficients")[1:11, ]
+predict(cv.lasso, s ="lambda.min", type = "coefficients")[1:11, ] # same! not necessary to get "lasso". use cv.lasso
+coef(cv.lasso, s = "lambda.min") # same! 
+# regfit.full etc (best subset selectio) is more precise.
 
+# (f) Now generate a response vector Y according to the model Y = β0 + β7X7 + ε, and perform best subset selection and the lasso. Discuss the results obtained.
+b0<-5;b7<-2 # Geoff's parameter
+set.seed(1);x<-rnorm(n=100,mean=10,sd=1);eps<-rnorm(n=100,1,0.1)
+data2<-data.frame(x=x,y=b0+b7*(x^7)+eps)
+# 
+regfit.full<-regsubsets(y ~ poly(x, 10, raw=T), data = data2, nvmax = 10) # error
+regfit.full<-regsubsets(y ~ poly(x, 9, raw=T), data = data2, nvmax = 9)
+regfit.fwd<-regsubsets(y ~ poly(x, 9, raw=T), data = data2, nvmax = 9,method="forward")
+regfit.bwd<-regsubsets(y ~ poly(x, 9, raw=T), data = data2, nvmax = 9,method="backward")
+xmat.ex9 <- model.matrix(y ~ poly(x, 10, raw=T), data = data2)[, -1] # 
+# summary for regfit.full
+reg.summary <- summary(regfit.full)
+#par(mfrow = c(2, 2))
+plot(reg.summary$cp, xlab = "Number of variables", ylab = "C_p", type = "l")
+points(which.min(reg.summary$cp), reg.summary$cp[which.min(reg.summary$cp)], col = "red", cex = 2, pch = 20)
+plot(reg.summary$bic, xlab = "Number of variables", ylab = "BIC", type = "l")
+points(which.min(reg.summary$bic), reg.summary$bic[which.min(reg.summary$bic)], col = "red", cex = 2, pch = 20)
+plot(reg.summary$adjr2, xlab = "Number of variables", ylab = "Adjusted R^2", type = "l")
+points(which.max(reg.summary$adjr2), reg.summary$adjr2[which.max(reg.summary$adjr2)], col = "red", cex = 2, pch = 20)
+# coeff
+coef(regfit.full,9)
+coef(regfit.fwd,9)
+coef(regfit.bwd,9)
+coef(cv.glmnet(xmat.ex9, data2$y, alpha = 1),10)[1:10]
+plot(data2$x,data2$y)
+cv.out<-cv.glmnet(xmat.ex9, data2$y, alpha = 1)
+predict(glmnet(xmat.ex9, data2$y, alpha = 1),newx=xmat.ex9[1:5,],s= cv.out$lambda.min)
+data2[1:5,]
+# 
+plot(regfit.full, scale="Cp")
+plot(regfit.full, scale="bic")
+plot(regfit.full, scale="adjr2")
+#
+plot(cv.glmnet(xmat.ex9, data2$y, alpha = 1)) # lambda.min is 500735.2
+plot(glmnet(xmat.ex9, data2$y, alpha = 1),xvar = "lambda", label = TRUE)
+```
 # 9 d
 # 9 In this exercise, we will predict the number of applications received using the other variables in the College data set.
-College
+```{r}
 # (a) Split the data set into a training set and a test set.
 set.seed(1)
 summary(College)
-x=model.matrix(Apps~.,College)[,-1]
+#x=model.matrix(Apps~.,College)[,-1] # Remove the first column, (Intercept)
+x=model.matrix(Apps~.,College) # Does not remove the first column, (Intercept)
 y=College$Apps
 dim(x) # 777 17
-train=sample(1:nrow(x), nrow(x)/2) # divide into two
-test=(-train) # interesting way
+set.seed(1)
+train=sample(c(TRUE,FALSE), nrow(College),rep=TRUE)
+test=(!train)
+# train=sample(1:nrow(x), nrow(x)/2) # divide into two. glmnet vignet way
+# test=(-train) # interesting way found in glmet vignet?
 x.test=x[test,]
-x.train=x[train,]
+# x.train=x[train,]
 y.test=y[test]
-y.train=y[train]
+# y.train=y[train]
 # (b) Fit a linear model using least squares on the training set, and report the test error obtained.
 colnames(College)
-# lm.train<-lm(y~x, subset=train)
-lm.train<-lm(y.train~x.train)
+sum(is.na(College)) # no NA
+# use regsubsets()
+regfit.best<-regsubsets(Apps~.,data=College[train,],nvmax=17)
+summary(regfit.best)
+plot(regfit.best)
+#
+val.errors=rep(NA,17)
+for(i in 1:17){
+   coefi=coef(regfit.best,id=i)
+   pred=x.test[,names(coefi)]%*%coefi
+   val.errors[i]=mean((College$Apps[test]-pred)^2)
+}
+val.errors
+which.min(val.errors) # 5
+# MSE. There is no predict function for this
+#mean((predict(summary(rigfit.full),newx=x.test)-y.test)^2)
+coef(regfit.best,5)
+# from text book
+predict.regsubsets=function(object,newdata,id,...){
+  form=as.formula(object$call[[2]])
+  mat=model.matrix(form,newdata)
+  coefi=coef(object,id=id)
+  xvars=names(coefi)
+  mat[,xvars]%*%coefi
+}
+as.formula(regfit.best$call[[2]])
+coef(regfit.best,id=5)
+
+predict.regsubsets.test<-predict.regsubsets(regfit.best,newdata=College[test,],id=5)
+length(predict.regsubsets.test) # 377
+#
+lm.train<-lm(Apps~., data=College,subset=train)
 summary(lm.train)
-pred.lm<-predict(lm.train,newx=x.test)
-mean((pred.lm-y.test)^2) # MSE
-dim(x.test) #389 17
-length(y.test) # 289
-length(pred.lm) # 388
+pred.lm<-predict(lm.train,newdata=College[test,-2]) # does not work
+length(pred.lm) # 400
+dim(College[test,])
+library(reshape2)
+melt.data<-melt(cbind(data.frame(pred.lm=pred.lm,pred.regsubsets=predict.regsubsets.test),Apps=College[test,2]),id="Apps")
+str(melt.data)
+library(ggplot2)
+ggplot(melt.data,aes(x=Apps,y=value,colour=variable,alpha=0.1)) + geom_point()
+# MSE 
+mean((pred.lm - College[test,"Apps"])^2) # 1520331 for lm
+mean((predict.regsubsets.test - College[test,"Apps"])^2) # 1492114 for regsubsets
+  
+
 # (c) Fit a ridge regression model on the training set, with λ chosen by cross-validation. Report the test error obtained
 library(glmnet)
-grid=10^seq(10,-2,length=100) # ?
+
 #ridge.mod=glmnet(x,y,alpha=0,lambda=grid) # If alpha=0 then a ridge regression model is fit, and if alpha=1 then a lasso model is fit. 
 # Recall from Chapter 3 that the least squares fitting procedure estimates β0,β1,...,βp using the values that minimize: RSS (residual sum of squares, Fig3.1, p62)
-### I've just copied from lab section...
-ridge.mod=glmnet(x[train,],y[train],alpha=0,lambda=grid, thresh=1e-12) # 
-ridge.pred=predict(ridge.mod,s=4,newx=x[test,])
-mean((ridge.pred-y.test)^2)
-mean((mean(y[train])-y.test)^2)
-ridge.pred=predict(ridge.mod,s=1e10,newx=x[test,])
-mean((ridge.pred-y.test)^2)
-ridge.pred=predict(ridge.mod,s=0,newx=x[test,],exact=T)
-mean((ridge.pred-y.test)^2)
-lm(y~x, subset=train)
-predict(ridge.mod,s=0,exact=T,type="coefficients")[1:20,] # error
+ridge.ex9=glmnet(College[train,-2],College[train,"Apps"],alpha=0) # error
+ridge.ex9=glmnet(x[train,-1],College[train,"Apps"],alpha=0) # removing intercept in x
+cv.ridge.ex9<-cv.glmnet(x[train,-1],College[train,"Apps"],alpha=0)
+predict(cv.ridge.ex9,s=cv.ridge.ex9$lambda.min,exact=T,type="coefficients")[1:18,] # coefficients
+ridge.predict.ex9<-predict(cv.ridge.ex9,s=cv.ridge.ex9$lambda.min,newx=x[test,-1])
+# MSE
+mean((ridge.predict.ex9 - College[test,"Apps"])^2) # 2585067
 
 # (d) Fit a lasso model on the training set, with λ chosen by cross- validation. Report the test error obtained, along with the number of non-zero coefficient estimates.
-
-
-
-
+lasso.ex9=glmnet(x[train,-1],College[train,"Apps"],alpha=1) # removing intercept in x
+cv.lasso.ex9<-cv.glmnet(x[train,-1],College[train,"Apps"],alpha=1)
+lasso.ex9.coef<-predict(cv.lasso.ex9,s=cv.lasso.ex9$lambda.min,exact=T,type="coefficients")[1:18,] # coefficients
+lasso.ex9.coef[!lasso.ex9.coef==0] #non zero
+lasso.ex9.coef[lasso.ex9.coef!=0] #non zero. this is also OK.
+lasso.predict.ex9<-predict(cv.lasso.ex9,s=cv.ridge.ex9$lambda.min,newx=x[test,-1])
+# MSE
+mean((lasso.predict.ex9 - College[test,"Apps"])^2) # 2010635. smaller than ridge
+```
 # 11 a,b,c, for all but PCR; we will add that next week.
+```{r}
 
 ```

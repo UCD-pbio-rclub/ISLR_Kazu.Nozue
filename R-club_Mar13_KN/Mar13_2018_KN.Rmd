@@ -119,7 +119,7 @@ length(predict.regsubsets.test) # 377
 # back to lm
 lm.train<-lm(Apps~., data=College,subset=train)
 summary(lm.train)
-pred.lm<-predict(lm.train,newdata=College[test,-2]) # does work?
+pred.lm<-predict(lm.train,newdata=College[test,-2]) # removing "Apps" in the data, College
 length(pred.lm) # 400
 dim(College[test,])
 # library(reshape2)
@@ -183,5 +183,60 @@ mean((pls.pred-y.test)^2) # 2982036
 ```
 #11 a,b,c, for all, we already did this, update for PCR
 ```{r}
+# We will now try to predict per capita crime rate in the Boston data set.
+# (a) Try out some of the regression methods explored in this chapter, such as best subset selection, the lasso, ridge regression, and PCR. Present and discuss results for the approaches that you consider.
+library(MASS)
+summary(Boston)
+?Boston
+sum(is.na(Boston)) # zero
+x=model.matrix(crim~.,Boston) # Does not remove the first column, (Intercept)
+y=Boston$crim
+dim(x) # 
+set.seed(1)
+train=sample(c(TRUE,FALSE), nrow(Boston),rep=TRUE)
+test=(!train)
+# train=sample(1:nrow(x), nrow(x)/2) # divide into two. glmnet vignet way
+x.test=x[test,]
+y.test=y[test]
+# lm
+lm.train<-lm(crim~., data=Boston,subset=train)
+summary(lm.train)
+pred.lm<-predict(lm.train,newdata=Boston[test,-1]) 
+length(pred.lm) # 254
+dim(Boston[test,]) # 254 14
+# MSE lm
+mean((pred.lm - Boston[test,"crim"])^2) # 57.13161
+############ under construction ###########
+# regsub
+regfit.best<-regsubsets(crim~.,data=Boston[train,],nvmax=14)
+summary(regfit.best)
+plot(regfit.best)
+#
+val.errors=rep(NA,17)
+for(i in 1:17){
+   coefi=coef(regfit.best,id=i)
+   pred=x.test[,names(coefi)]%*%coefi
+   val.errors[i]=mean((College$Apps[test]-pred)^2)
+}
+val.errors
+which.min(val.errors) # 5
+# MSE. There is no predict function for this
+#mean((predict(summary(rigfit.full),newx=x.test)-y.test)^2)
+coef(regfit.best,5)
+# from text book
+predict.regsubsets=function(object,newdata,id,...){
+  form=as.formula(object$call[[2]])
+  mat=model.matrix(form,newdata)
+  coefi=coef(object,id=id)
+  xvars=names(coefi)
+  mat[,xvars]%*%coefi
+}
+as.formula(regfit.best$call[[2]])
+coef(regfit.best,id=5)
+predict.regsubsets.test<-predict.regsubsets(regfit.best,newdata=College[test,],id=5)
+
+# (b) Propose a model (or set of models) that seem to perform well on this data set, and justify your answer. Make sure that you are evaluating model performance using validation set error, cross- validation, or some other reasonable alternative, as opposed to using training error.
+
+# (c) Does your chosen model involve all of the features in the data set? Why or why not?
 
 ```

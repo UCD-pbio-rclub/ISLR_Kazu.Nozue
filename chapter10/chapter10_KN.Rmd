@@ -1,0 +1,14 @@
+---
+title: "chapter 10"
+author: "Kazu"
+date: "3/13/2018"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error = TRUE)
+library(ISLR);library(leaps)
+```

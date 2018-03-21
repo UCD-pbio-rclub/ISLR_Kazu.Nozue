@@ -169,7 +169,7 @@ pls.fit=plsr(Apps~., data=College,subset=train,scale=TRUE, validation="CV")
 summary(pls.fit)
 validationplot(pls.fit,val.type="MSEP")
 # The lowest cross-validation error occurs when only M = 2 partial least squares directions are used. We now evaluate the corresponding test set MSE.
-pls.pred=predict(pls.fit,x[test,][,-1],ncomp=3)
+pls.pred=predict(pls.fit,x[test,][,-1],ncomp=10)
 mean((pls.pred-y.test)^2) # 2982036
 
 # (g) Comment on the results obtained. How accurately can we pre- dict the number of college applications received? Is there much difference among the test errors resulting from these five approaches?
@@ -207,22 +207,22 @@ dim(Boston[test,]) # 254 14
 # MSE lm
 mean((pred.lm - Boston[test,"crim"])^2) # 57.13161
 ############ under construction ###########
-# regsub
+# Bestsubset; regsub
 regfit.best<-regsubsets(crim~.,data=Boston[train,],nvmax=14)
 summary(regfit.best)
 plot(regfit.best)
 #
-val.errors=rep(NA,17)
-for(i in 1:17){
+val.errors=rep(NA,13)
+for(i in 1:13){
    coefi=coef(regfit.best,id=i)
    pred=x.test[,names(coefi)]%*%coefi
-   val.errors[i]=mean((College$Apps[test]-pred)^2)
+   val.errors[i]=mean((Boston$crim[test]-pred)^2)
 }
 val.errors
-which.min(val.errors) # 5
+which.min(val.errors) # 2
 # MSE. There is no predict function for this
 #mean((predict(summary(rigfit.full),newx=x.test)-y.test)^2)
-coef(regfit.best,5)
+coef(regfit.best,2)
 # from text book
 predict.regsubsets=function(object,newdata,id,...){
   form=as.formula(object$call[[2]])
@@ -233,7 +233,7 @@ predict.regsubsets=function(object,newdata,id,...){
 }
 as.formula(regfit.best$call[[2]])
 coef(regfit.best,id=5)
-predict.regsubsets.test<-predict.regsubsets(regfit.best,newdata=College[test,],id=5)
+predict.regsubsets.test<-predict.regsubsets(regfit.best,newdata=College[test,],id=2)
 
 # (b) Propose a model (or set of models) that seem to perform well on this data set, and justify your answer. Make sure that you are evaluating model performance using validation set error, cross- validation, or some other reasonable alternative, as opposed to using training error.
 

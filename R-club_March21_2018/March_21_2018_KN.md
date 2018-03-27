@@ -496,8 +496,11 @@ qplot(1:10,all.deltas,geom="line",xlab="degree")
 ![](March_21_2018_KN_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 
 ```r
+<<<<<<< HEAD
 ## see Julin's tibble way
 
+=======
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 ## (b) Fit a step function to predict wage using age, and perform cross- validation to choose the optimal number of cuts. Make a plot of the fit obtained.
 fit.lm.cut2=lm(wage~cut(age,2),data=Wage[train,])
 fit.lm.cut3=lm(wage~cut(age,3),data=Wage[train,])
@@ -541,8 +544,11 @@ mean((preds.lm.cut5-Wage[test,"wage"])^2)
 ```
 
 ```r
+<<<<<<< HEAD
 # anova
 
+=======
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 # using boot(), cut 2 to 10
 all.deltas = rep(NA, 9)
 for (i in 2:10) {
@@ -643,59 +649,116 @@ names(Wage)
 ```
 
 ```r
+<<<<<<< HEAD
 library(ggplot2)
 ggplot(Wage,aes(as.factor(year),wage))+geom_violin() # no effects
 ```
 
 ![](March_21_2018_KN_files/figure-html/unnamed-chunk-4-2.png)<!-- -->
+=======
+ggplot(Wage,aes(as.factor(year),wage))+geom_violin() # no effects
+```
+
+```
+## Error in eval(expr, envir, enclos): could not find function "ggplot"
+```
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 
 ```r
 ggplot(Wage,aes(maritl,wage))+geom_violin() # has effects
 ```
 
+<<<<<<< HEAD
 ![](March_21_2018_KN_files/figure-html/unnamed-chunk-4-3.png)<!-- -->
+=======
+```
+## Error in eval(expr, envir, enclos): could not find function "ggplot"
+```
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 
 ```r
 ggplot(Wage,aes(race,wage))+geom_violin() # has effects
 ```
 
+<<<<<<< HEAD
 ![](March_21_2018_KN_files/figure-html/unnamed-chunk-4-4.png)<!-- -->
+=======
+```
+## Error in eval(expr, envir, enclos): could not find function "ggplot"
+```
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 
 ```r
 ggplot(Wage,aes(education,wage))+geom_violin() # has strong effects
 ```
 
+<<<<<<< HEAD
 ![](March_21_2018_KN_files/figure-html/unnamed-chunk-4-5.png)<!-- -->
+=======
+```
+## Error in eval(expr, envir, enclos): could not find function "ggplot"
+```
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 
 ```r
 ggplot(Wage,aes(region,wage))+geom_violin() # only Middle Atlantic
 ```
 
+<<<<<<< HEAD
 ![](March_21_2018_KN_files/figure-html/unnamed-chunk-4-6.png)<!-- -->
+=======
+```
+## Error in eval(expr, envir, enclos): could not find function "ggplot"
+```
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 
 ```r
 ggplot(Wage,aes(jobclass,wage))+geom_violin() # has effects
 ```
 
+<<<<<<< HEAD
 ![](March_21_2018_KN_files/figure-html/unnamed-chunk-4-7.png)<!-- -->
+=======
+```
+## Error in eval(expr, envir, enclos): could not find function "ggplot"
+```
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 
 ```r
 ggplot(Wage,aes(health,wage))+geom_violin() # has effects
 ```
 
+<<<<<<< HEAD
 ![](March_21_2018_KN_files/figure-html/unnamed-chunk-4-8.png)<!-- -->
+=======
+```
+## Error in eval(expr, envir, enclos): could not find function "ggplot"
+```
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 
 ```r
 ggplot(Wage,aes(health_ins,wage))+geom_violin() # has strong effects
 ```
 
+<<<<<<< HEAD
 ![](March_21_2018_KN_files/figure-html/unnamed-chunk-4-9.png)<!-- -->
+=======
+```
+## Error in eval(expr, envir, enclos): could not find function "ggplot"
+```
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 
 ```r
 ggplot(Wage,aes(logwage,wage))+geom_point() # just transformation
 ```
 
+<<<<<<< HEAD
 ![](March_21_2018_KN_files/figure-html/unnamed-chunk-4-10.png)<!-- -->
+=======
+```
+## Error in eval(expr, envir, enclos): could not find function "ggplot"
+```
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 
 ```r
 # non-linear regression using poly() and estimate coefficient by ridge or lasso
@@ -1530,6 +1593,7 @@ library(MASS);head(Boston)
 ```
 
 ```r
+<<<<<<< HEAD
 i<-2
 fit.glm<-glm(nox~poly(dis,i),data=Boston)
 predict.nox<-predict(fit.glm,newdata=Boston$dis) # does not work...
@@ -1548,6 +1612,8 @@ ggplot(Boston,aes(nox,dis))+geom_point(alpha=0.1) + geom_line(nox,predict.nox)
 ```
 
 ```r
+=======
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 ##  (b) Plot the polynomial fits for a range of different polynomial degrees (say, from 1 to 10), and report the associated residual sum of squares.
 
 

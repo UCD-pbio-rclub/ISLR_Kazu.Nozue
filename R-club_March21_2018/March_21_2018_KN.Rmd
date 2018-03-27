@@ -81,12 +81,18 @@ lines(age.grid,pred$fit-2*pred$se,lty="dashed")
 dim(bs(age,knots=c(25,40,60)))
 dim(bs(age,df=6))
 attr(bs(age,df=6),"knots")
+<<<<<<< HEAD
 # In this case R chooses knots at ages 33.8, 42.0, and 51.0, which correspond to the 25th, 50th, and 75th percentiles of age. The function bs() also has a degree argument, so we can fit splines of any degree, rather than the default degree of 3 (which yields a cubic spline). 
 # In order to instead fit a natural spline, we use the ns() function. Here ns() we fit a natural spline with four degrees of freedom.
 fit2=lm(wage~ns(age,df=4),data=Wage)
 pred2=predict(fit2,newdata=list(age=age.grid),se=T)
 lines(age.grid, pred2$fit,col="red",lwd=2)
 # In order to fit a smoothing spline, we use the smooth.spline() function. smooth. Figure 7.8 was produced with the following code:
+=======
+fit2=lm(wage~ns(age,df=4),data=Wage)
+pred2=predict(fit2,newdata=list(age=age.grid),se=T)
+lines(age.grid, pred2$fit,col="red",lwd=2)
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 plot(age,wage,xlim=agelims,cex=.5,col="darkgrey")
 title("Smoothing Spline")
 fit=smooth.spline(age,wage,df=16)
@@ -161,8 +167,11 @@ all.deltas
 library(ggplot2)
 qplot(1:10,all.deltas,geom="line",xlab="degree")
 
+<<<<<<< HEAD
 ## see Julin's tibble way
 
+=======
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 ## (b) Fit a step function to predict wage using age, and perform cross- validation to choose the optimal number of cuts. Make a plot of the fit obtained.
 fit.lm.cut2=lm(wage~cut(age,2),data=Wage[train,])
 fit.lm.cut3=lm(wage~cut(age,3),data=Wage[train,])
@@ -178,8 +187,11 @@ mean((preds.lm.cut2-Wage[test,"wage"])^2)
 mean((preds.lm.cut3-Wage[test,"wage"])^2)
 mean((preds.lm.cut4-Wage[test,"wage"])^2)
 mean((preds.lm.cut5-Wage[test,"wage"])^2)
+<<<<<<< HEAD
 # anova
 
+=======
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 # using boot(), cut 2 to 10
 all.deltas = rep(NA, 9)
 for (i in 2:10) {
@@ -208,7 +220,10 @@ attach(Wage)
 ?pairs
 pairs(Wage)
 names(Wage)
+<<<<<<< HEAD
 library(ggplot2)
+=======
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 ggplot(Wage,aes(as.factor(year),wage))+geom_violin() # no effects
 ggplot(Wage,aes(maritl,wage))+geom_violin() # has effects
 ggplot(Wage,aes(race,wage))+geom_violin() # has effects
@@ -222,8 +237,11 @@ ggplot(Wage,aes(logwage,wage))+geom_point() # just transformation
 # non-linear regression using poly() and estimate coefficient by ridge or lasso
 # which degree I need to use?
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 detach()
 ```
 # 8. Fit some of the non-linear models investigated in this chapter to the Auto data set. Is there evidence for non-linear relationships in this data set? Create some informative plots to justify your answer.
@@ -231,16 +249,20 @@ detach()
 ```{r}
 Auto
 pairs(Auto)
+<<<<<<< HEAD
 library(ggplot2) 
 library(GGally) # from Min Yao repo
 ggpairs(Auto[-9])
 
+=======
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 ```
 # 9. This question uses the variables dis (the weighted mean of distances to five Boston employment centers) and nox (nitrogen oxides concen- tration in parts per 10 million) from the Boston data. We will treat dis as the predictor and nox as the response.
 
 ```{r}
 ## (a) Use the poly() function to fit a cubic polynomial regression to predict nox using dis. Report the regression output, and plot the resulting data and polynomial fits.
 library(MASS);head(Boston)
+<<<<<<< HEAD
 i<-3
 fit.glm<-glm(nox~poly(dis,i),data=Boston)
 fit.glm
@@ -272,6 +294,10 @@ Boston %>% dplyr::select(dis,nox,contains("degree")) %>% gather(dis,"value",2:10
 head(Boston.gather) # does not work well
 
 ggplot(aes(dis,-dis))+geom_point(alpha=0.1) + geom_ribbon(aes(ymin=predict.nox-predict.nox.se,ymax=predict.nox+predict.nox.se))
+=======
+
+##  (b) Plot the polynomial fits for a range of different polynomial degrees (say, from 1 to 10), and report the associated residual sum of squares.
+>>>>>>> 3a27b75e471d386043be3c0b8b6a8cb0d5278640
 
 
 ## (c) Perform cross-validation or another approach to select the opti- mal degree for the polynomial, and explain your results.

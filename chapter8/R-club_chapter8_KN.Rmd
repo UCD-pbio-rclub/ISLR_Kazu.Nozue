@@ -1,0 +1,198 @@
+---
+title: "April12_2018_KN"
+author: "Kazu"
+date: "4/12/2018"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ISLR);library(tree);attach(Carseats)
+```
+# Chapter 8 Lab: Decision Trees
+```{r}
+# Fitting Classification Trees
+High=ifelse(Sales<=8,"No","Yes")
+Carseats=data.frame(Carseats,High)
+tree.carseats=tree(High~.-Sales,Carseats)
+summary(tree.carseats)
+plot(tree.carseats)
+text(tree.carseats,pretty=0)
+tree.carseats
+set.seed(2)
+train=sample(1:nrow(Carseats), 200)
+Carseats.test=Carseats[-train,]
+High.test=High[-train]
+tree.carseats=tree(High~.-Sales,Carseats,subset=train)
+tree.pred=predict(tree.carseats,Carseats.test,type="class")
+table(tree.pred,High.test)
+(86+57)/200
+# Next, we consider whether pruning the tree might lead to improved results. The function cv.tree() performs cross-validation in order to determine the optimal level of tree complexity; cost complexity pruning is used in order to select a sequence of trees for consideration. We use the argument FUN=prune.misclass in order to indicate that we want the classification error rate to guide the cross-validation and pruning process, rather than the default for the cv.tree() function, which is deviance. The cv.tree() function reports the number of terminal nodes of each tree con- sidered (size) as well as the corresponding error rate and the value of the cost-complexity parameter used (k, which corresponds to α in (8.4)).  
+set.seed(3)
+cv.carseats=cv.tree(tree.carseats,FUN=prune.misclass)
+names(cv.carseats)
+cv.carseats
+par(mfrow=c(1,2))
+plot(cv.carseats$size,cv.carseats$dev,type="b")
+plot(cv.carseats$k,cv.carseats$dev,type="b")
+prune.carseats=prune.misclass(tree.carseats,best=9)
+plot(prune.carseats)
+text(prune.carseats,pretty=0)
+tree.pred=predict(prune.carseats,Carseats.test,type="class")
+table(tree.pred,High.test)
+(94+60)/200
+prune.carseats=prune.misclass(tree.carseats,best=15)
+plot(prune.carseats)
+text(prune.carseats,pretty=0)
+tree.pred=predict(prune.carseats,Carseats.test,type="class")
+table(tree.pred,High.test)
+(86+62)/200
+```
+# 8.3.2 Fitting Regression Trees
+```{r}
+library(MASS)
+set.seed(1)
+train = sample(1:nrow(Boston), nrow(Boston)/2)
+tree.boston=tree(medv~.,Boston,subset=train)
+summary(tree.boston)
+plot(tree.boston)
+text(tree.boston,pretty=0)
+cv.boston=cv.tree(tree.boston)
+plot(cv.boston$size,cv.boston$dev,type='b')
+prune.boston=prune.tree(tree.boston,best=5)
+plot(prune.boston)
+text(prune.boston,pretty=0)
+yhat=predict(tree.boston,newdata=Boston[-train,])
+boston.test=Boston[-train,"medv"]
+plot(yhat,boston.test)
+abline(0,1)
+mean((yhat-boston.test)^2)
+```
+# 8.3.3 Bagging and Random Forests
+```{r}
+library(randomForest)
+# Recall that bagging is simply a special case of a random forest with m = p. 
+set.seed(1)
+bag.boston=randomForest(medv~.,data=Boston,subset=train,mtry=13,importance=TRUE)
+bag.boston
+# The argument mtry=13 indicates that all 13 predictors should be considered for each split of the tree—in other words, that bagging should be done. How well does this bagged model perform on the test set?
+yhat.bag = predict(bag.boston,newdata=Boston[-train,])
+plot(yhat.bag, boston.test)
+abline(0,1)
+mean((yhat.bag-boston.test)^2)
+# The test set MSE associated with the bagged regression tree is 13.16, almost half that obtained using an optimally-pruned single tree. We could change the number of trees grown by randomForest() using the ntree argument:
+bag.boston=randomForest(medv~.,data=Boston,subset=train,mtry=13,ntree=25)
+yhat.bag = predict(bag.boston,newdata=Boston[-train,])
+mean((yhat.bag-boston.test)^2)
+# Growing a random forest proceeds in exactly the same way, except that we use a smaller value of the mtry argument. By default, randomForest() uses p/3 variables when building a random forest of regression trees, and √p variables when building a random forest of classification trees. Here we use mtry = 6.
+set.seed(1)
+rf.boston=randomForest(medv~.,data=Boston,subset=train,mtry=6,importance=TRUE)
+yhat.rf = predict(rf.boston,newdata=Boston[-train,])
+mean((yhat.rf-boston.test)^2)
+# The test set MSE is 11.31; this indicates that random forests yielded an improvement over bagging in this case. Using the importance() function, we can view the importance of each importance() variable.
+importance(rf.boston)
+# Two measures of variable importance are reported. The former is based upon the mean decrease of accuracy in predictions on the out of bag samples when a given variable is excluded from the model. The latter is a measure of the total decrease in node impurity that results from splits over that variable, averaged over all trees (this was plotted in Figure 8.9). In the case of regression trees, the node impurity is measured by the training RSS, and for classification trees by the deviance. Plots of these importance measures can be produced using the varImpPlot() function.
+varImpPlot(rf.boston)
+```
+# 8.3.4 Boosting
+```{r}
+# Hereweusethegbmpackage,andwithinitthegbm()function,tofitboosted regression trees to the Boston data set. We run gbm() with the option distribution="gaussian" since this is a regression problem; if it were a bi- nary classification problem, we would use distribution="bernoulli". The argument n.trees=5000 indicates that we want 5000 trees, and the option interaction.depth=4 limits the depth of each tree.
+library(gbm)
+set.seed(1)
+boost.boston=gbm(medv~.,data=Boston[train,],distribution="gaussian",n.trees=5000,interaction.depth=4)
+summary(boost.boston)
+par(mfrow=c(1,2))
+plot(boost.boston,i="rm")
+plot(boost.boston,i="lstat")
+yhat.boost=predict(boost.boston,newdata=Boston[-train,],n.trees=5000)
+mean((yhat.boost-boston.test)^2)
+boost.boston=gbm(medv~.,data=Boston[train,],distribution="gaussian",n.trees=5000,interaction.depth=4,shrinkage=0.2,verbose=F)
+yhat.boost=predict(boost.boston,newdata=Boston[-train,],n.trees=5000)
+mean((yhat.boost-boston.test)^2)
+detach()
+```
+# Exercise 1
+```{r}
+
+
+```
+# Ex 3
+```{r}
+
+
+```
+
+# Exercise 5.
+## 5. Suppose we produce ten bootstrapped samples from a data set containing red and green classes. We then apply a classification tree to each bootstrapped sample and, for a specific value of X, produce 10 estimates of P(Class is Red|X): 0.1, 0.15, 0.2, 0.2, 0.55, 0.6, 0.6, 0.65, 0.7, and 0.75. 
+## There are two common ways to combine these results together into a single class prediction. One is the majority vote approach discussed in this chapter. The second approach is to classify based on the average probability. In this example, what is the final classification under each of these two approaches?
+```{r}
+
+```
+# Ex 8 
+## In the lab, a classification tree was applied to the Carseats data set after converting Sales into a qualitative response variable. Now we will seek to predict Sales using regression trees and related approaches, treating the response as a quantitative variable.
+```{r}
+# (a) Split the data set into a training set and a test set.
+attach(Carseats)
+summary(Carseats)
+head(Carseats);dim(Carseats)
+str(Carseats)
+Carseats$Sales<-as.numeric(Carseats$Sales) # converting Sales into a qualitative response variable
+set.seed(1)
+train = sample(1:nrow(Carseats), nrow(Carseats)/2)
+Carseats.test=Carseats[-train,]
+# (b) Fit a regression tree to the training set. Plot the tree, and interpret the results. What test MSE do you obtain?
+tree.Carseats=tree(Sales~.,Carseats,subset=train)
+summary(tree.Carseats) # Error in y - frame$yval[object$where] : non-numeric argument to binary operator when Sales are characters
+plot(tree.Carseats)
+text(tree.Carseats,pretty=0)
+tree.pred<-predict(tree.Carseats,Carseats.test)
+mean((tree.pred-Carseats.test$Sales)^2) # 2.793222
+# (c) Use cross-validation in order to determine the optimal level of tree complexity. Does pruning the tree improve the test MSE?
+cv.Carseats=cv.tree(tree.Carseats)
+cv.Carseats
+plot(cv.Carseats$size,cv.Carseats$dev,type='b')
+plot(cv.Carseats$size,cv.Carseats$k,type='b')
+## pruning
+prune.Carseats=prune.tree(tree.Carseats,best=3) # best 3?
+plot(prune.Carseats)
+text(prune.Carseats,pretty=0)
+tree.pred.prune<-predict(prune.Carseats,Carseats.test)
+mean((tree.pred.prune-Carseats.test$Sales)^2) # 2.924344 (larger..)
+# (d) Use the bagging approach in order to analyze this data. What test MSE do you obtain? Use the importance() function to determine which variables are most important.
+library(randomForest)
+names(Carseats) # 11 predictors
+set.seed(1)
+bag.Carseats<-randomForest(Sales~.,data=Carseats,subset=train,mtry=11,importance=TRUE) #
+bag.Carseats
+yhat.bag = predict(bag.Carseats,newdata=Carseats.test)
+mean((yhat.bag-Carseats.test$Sales)^2) # 1.946917
+importance(bag.Carseats)
+varImpPlot(bag.Carseats) # High
+
+# (e) Use random forests to analyze this data. What test MSE do you obtain? Use the importance() function to determine which variables are most important. Describe the effect of m, the number of variables considered at each split, on the error rate obtained.
+set.seed(1)
+rf.Carseats<-randomForest(Sales~.,data=Carseats,subset=train,mtry=5,importance=TRUE) #
+rf.Carseats
+yhat.rf = predict(rf.Carseats,newdata=Carseats.test)
+mean((yhat.rf-Carseats.test$Sales)^2) # 1.908167 (MSE)
+importance(rf.Carseats)
+varImpPlot(rf.Carseats) # 
+
+```
+# Ex 9
+```{r}
+
+
+
+```
+# Ex 10 We now use boosting to predict Salary in the Hitters data set.
+```{r}
+# (a) Remove the observations for whom the salary information is unknown, and then log-transform the salaries.
+
+# (b) Create a training set consisting of the first 200 observations, and a test set consisting of the remaining observations.
+
+```
+# Ex 11
+# Ex 12
